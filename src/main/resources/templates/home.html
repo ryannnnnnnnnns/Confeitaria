@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>home</title>
+    <style>
+        .alertas-estoque {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: .25rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .alertas-estoque h2 {
+            color: #856404;
+            margin-top: 0;
+        }
+
+        .alertas-estoque ul {
+            padding-left: 20px;
+            margin-bottom: 0;
+        }
+
+        .alertas-estoque li {
+            color: #856404;
+        }
+    </style>
+</head>
+
+<body class="body-geral">
+    
+    <div class="cont-principal">
+        <div class="menu-lateral" id="menuLateral">
+            <button class="toggle-menu" id="toggleMenu">☰</button>
+
+            <ul>
+                <li><a th:href="@{/home}" class="box">Início</a></li>
+                <li><a th:href="@{/estoque}" class="box">Estoque</a></li>
+                <li><a th:href="@{/producao/diaria}" class="box">Produção</a></li>
+                <li><a th:href="@{/vendas}" class="box">Vendas</a></li>
+                <li><a th:href="@{/produtos}" class="box">Produtos</a></li>
+                <li><a th:href="@{/pedidos}" class="box">Pedidos</a></li>
+                <li><a th:href="@{/orcamentos}" class="box">Orçamentos</a></li>
+                                <li><a th:href="@{/configuracoes}" class="box">Configurações</a></li>
+                
+                <li>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" class="box">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+        <div class="conteudo">
+            <div class="conteudo-meio">
+                <div class="alertas-estoque" th:if="${!materiasPrimasComEstoqueBaixo.isEmpty()}">
+                    <h2>Alerta de Estoque Baixo</h2>
+                    <ul>
+                        <li th:each="materiaPrima : ${materiasPrimasComEstoqueBaixo}">
+                            <span th:text="${materiaPrima.nome}"></span> - Estoque atual: <span
+                                th:text="${materiaPrima.quantidade}"></span> <span
+                                th:text="${materiaPrima.unidade}"></span> (Mínimo: <span
+                                th:text="${materiaPrima.quantidadeMinima}"></span> <span
+                                th:text="${materiaPrima.unidade}"></span>)
+                        </li>
+                    </ul>
+                </div>
+                <div th:if="${materiasPrimasComEstoqueBaixo.isEmpty()}">
+                    <h2>Bem-vindo!</h2>
+                    <p>Não há alertas de estoque no momento.</p>
+                </div>
+            </div>
+            <div class="conteudo-abaixo">
+                <h2>Próximos Pedidos</h2>
+                <div th:if="${upcomingPedidos.isEmpty()}">
+                    <p>Não há pedidos futuros.</p>
+                </div>
+                <table th:if="${!upcomingPedidos.isEmpty()}">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Data de Entrega</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="pedido : ${upcomingPedidos}">
+                            <td th:text="${pedido.cliente}"></td>
+                            <td th:text="${#temporals.format(pedido.dataEntrega, 'dd/MM/yyyy')}"></td>
+                            <td th:text="${pedido.status}"></td>
+                            <td>
+                                <a th:href="@{/pedido/{id}(id=${pedido.id})}" class="box">Detalhes</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="home.js"></script>
+</body>
+
+</html>

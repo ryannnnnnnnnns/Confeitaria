@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="body-geral">
+    <div class="cont-principal">
+        <div class="menu-lateral" id="menuLateral">
+            <button class="toggle-menu" id="toggleMenu">☰</button>
+            
+            <ul>
+                <li><a th:href="@{/home}" class="box">Início</a></li>
+                <li><a th:href="@{/estoque}" class="box">Estoque</a></li>
+                <li><a th:href="@{/producao}" class="box">Produção</a></li>
+                <li><a th:href="@{/vendas}" class="box">Vendas</a></li>
+                <li><a th:href="@{/produtos}" class="box">Produtos</a></li>
+                <li><a th:href="@{/pedidos}" class="box">Pedidos</a></li>
+                <li><a th:href="@{/orcamentos}" class="box">Orçamentos</a></li>
+                                <li><a th:href="@{/configuracoes}" class="box">Configurações</a></li>
+                
+                <li>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" class="box">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+        <div class="conteudo">
+            <div class="conteudo-meio">
+                <h1>Configurações</h1>
+
+                <div class="options-container links">
+                    <button id="btn-redefinir-senha" class="box">Redefinir Senha</button>
+                    <button id="btn-redefinir-login" class="box">Redefinir Nome de Usuário</button>
+                    <button id="btn-redefinir-pergunta" class="box">Redefinir Pergunta Secreta</button>
+                  
+                </div>
+
+                <!-- Seção de Administração -->
+                <div th:if="${isAdmin}" class="card form-container" style="margin-top: 20px;">
+                    <h2>Administração</h2>
+                    <a th:if="${isAdmin}" th:href="@{/admin/usuarios}" class="box">Gerenciar Usuários</a>
+                    
+
+                </div>
+
+                <div id="form-redefinir-senha" class="card form-container" style="display:none;">
+                    <h2>Redefinir Senha</h2>
+
+                    <form th:action="@{/redefinir-senha}" method="post" class="form">
+                        <div class="actions">
+                            <button type="submit" class="box">Redefinir Senha</button>
+                        </div>
+                        <input type="password" id="senha-antiga" name="senhaAntiga" required class="box" placeholder="Senha Antiga">
+                        <input type="password" id="nova-senha" name="novaSenha" required class="box" placeholder="Nova Senha">
+                        <input type="password" id="confirmar-senha" name="confirmarNovaSenha" required class="box" placeholder="Confirmar Nova Senha">
+                    </form>
+                </div>
+
+                <div id="form-redefinir-login" class="card form-container" style="display:none;">
+                    <h2>Redefinir Nome de Usuário</h2>
+
+                    <form th:action="@{/redefinir-login}" method="post" class="form">
+                        <div class="actions">
+                            <button type="submit" class="box">Redefinir Nome de Usuário</button>
+                        </div>
+                        <input type="text" id="login-atual" name="loginAtual" required class="box" placeholder="Nome de Usuário Atual">
+                        <input type="text" id="novo-login" name="novoLogin" required class="box" placeholder="Novo Nome de Usuário">
+                        <input type="password" id="senha-login" name="senha" required class="box" placeholder="Senha">
+                    </form>
+                </div>
+
+                <div id="form-redefinir-pergunta" class="card form-container" style="display:none;">
+                    <h2>Redefinir Pergunta Secreta</h2>
+
+                    <form th:action="@{/redefinir-pergunta}" method="post" class="form">
+                        <div class="actions">
+                            <button type="submit" class="box">Redefinir Pergunta Secreta</button>
+                        </div>
+                        <input type="password" name="senha" required class="box" placeholder="Senha Atual">
+                        <input type="text" name="novaPerguntaSecreta" required class="box" placeholder="Nova Pergunta Secreta">
+                        <input type="text" name="novaRespostaSecreta" required class="box" placeholder="Nova Resposta Secreta">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/home.js"></script>
+    <script>
+        const btnRedefinirSenha = document.getElementById('btn-redefinir-senha');
+        const btnRedefinirLogin = document.getElementById('btn-redefinir-login');
+        const btnRedefinirPergunta = document.getElementById('btn-redefinir-pergunta');
+        const formRedefinirSenha = document.getElementById('form-redefinir-senha');
+        const formRedefinirLogin = document.getElementById('form-redefinir-login');
+        const formRedefinirPergunta = document.getElementById('form-redefinir-pergunta');
+
+        btnRedefinirSenha.addEventListener('click', () => {
+            formRedefinirSenha.style.display = 'block';
+            formRedefinirLogin.style.display = 'none';
+            formRedefinirPergunta.style.display = 'none';
+        });
+
+        btnRedefinirLogin.addEventListener('click', () => {
+            formRedefinirSenha.style.display = 'none';
+            formRedefinirLogin.style.display = 'block';
+            formRedefinirPergunta.style.display = 'none';
+        });
+
+        btnRedefinirPergunta.addEventListener('click', () => {
+            formRedefinirSenha.style.display = 'none';
+            formRedefinirLogin.style.display = 'none';
+            formRedefinirPergunta.style.display = 'block';
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const errorSenha = document.querySelector('#form-redefinir-senha .alert-danger');
+            const successSenha = document.querySelector('#form-redefinir-senha .alert-success');
+            const errorLogin = document.querySelector('#form-redefinir-login .alert-danger');
+            const errorPergunta = document.querySelector('#form-redefinir-pergunta .alert-danger');
+
+            if (errorSenha || successSenha) {
+                formRedefinirSenha.style.display = 'block';
+                formRedefinirLogin.style.display = 'none';
+                formRedefinirPergunta.style.display = 'none';
+            } else if (errorLogin) {
+                formRedefinirSenha.style.display = 'none';
+                formRedefinirLogin.style.display = 'block';
+                formRedefinirPergunta.style.display = 'none';
+            } else if (errorPergunta) {
+                formRedefinirSenha.style.display = 'none';
+                formRedefinirLogin.style.display = 'none';
+                formRedefinirPergunta.style.display = 'block';
+            }
+        });
+    </script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        document.addEventListener('DOMContentLoaded', function() {
+            showAlert('error', /*[[${error}]]*/ null);
+            showAlert('success', /*[[${success}]]*/ null);
+            showAlert('error', /*[[${errorLogin}]]*/ null);
+            showAlert('success', /*[[${successLogin}]]*/ null);
+            showAlert('error', /*[[${errorPergunta}]]*/ null);
+            showAlert('success', /*[[${successPergunta}]]*/ null);
+        });
+        /*]]>*/
+    </script>
+</body>
+</html>

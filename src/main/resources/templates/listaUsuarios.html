@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <title>Lista de Usuários</title>
+</head>
+
+<body class="body-geral">
+    <div class="cont-principal">
+        <div class="menu-lateral" id="menuLateral">
+            <button class="toggle-menu" id="toggleMenu">☰</button>
+            
+            <ul>
+                <li><a th:href="@{/home}" class="box">Início</a></li>
+                <li><a th:href="@{/estoque}" class="box">Estoque</a></li>
+                <li><a th:href="@{/producao}" class="box">Produção</a></li>
+                <li><a th:href="@{/vendas}" class="box">Vendas</a></li>
+                <li><a th:href="@{/produtos}" class="box">Produtos</a></li>
+                <li><a th:href="@{/pedidos}" class="box">Pedidos</a></li>
+                <li><a th:href="@{/orcamentos}" class="box">Orçamentos</a></li>
+                <li><a th:href="@{/configuracoes}" class="box">Configurações</a></li>
+                
+                <li>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" class="box">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+        <div class="conteudo">
+            <div class="conteudo-meio">
+                <h2>Gerenciamento de Usuários</h2>
+                <div th:if="${param.success}" class="alert alert-success">
+                    <p th:text="${param.success}"></p>
+                </div>
+                <div th:if="${param.error}" class="alert alert-danger">
+                    <p th:text="${param.error}"></p>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Login</th>
+                            <th>Telefone</th>
+                            <th>Tipo de Usuário</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="usuario : ${usuarios}">
+                            <td th:text="${usuario.nome}"></td>
+                            <td th:text="${usuario.login}"></td>
+                            <td th:text="${usuario.fone}"></td>
+                            <td th:text="${usuario.role}"></td>
+                            <td th:text="${usuario.enabled ? 'Ativo' : 'Inativo'}"></td>
+                            <td>
+                                <form th:action="@{/admin/usuarios/aprovar/{id}(id=${usuario.id})}" method="post" style="display: inline-block;">
+                                    <button type="submit" class="box" th:if="${!usuario.enabled}">Aprovar</button>
+                                </form>
+                                <form th:action="@{/admin/usuarios/reprovar/{id}(id=${usuario.id})}" method="post" style="display: inline-block;">
+                                    <button type="submit" class="box" th:if="${usuario.enabled}">Reprovar</button>
+                                </form>
+                                <form th:action="@{/admin/usuarios/excluir/{id}(id=${usuario.id})}" method="post" style="display: inline-block;">
+                                    <button type="submit" class="box">Excluir</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="/home.js"></script>
+</body>
+
+</html>

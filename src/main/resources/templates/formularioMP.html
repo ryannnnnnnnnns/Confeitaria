@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <title>Criar Matéria-Prima</title>
+</head>
+
+<body class="body-geral">
+    <div class="cont-principal">
+        <div class="menu-lateral" id="menuLateral">
+            <button class="toggle-menu" id="toggleMenu">☰</button>
+            
+            <ul>
+                <li><a th:href="@{/home}" class="box">Início</a></li>
+                <li><a th:href="@{/estoque}" class="box">Estoque</a></li>
+                <li><a th:href="@{/producao}" class="box">Produção</a></li>
+                <li><a th:href="@{/vendas}" class="box">Vendas</a></li>
+                <li><a th:href="@{/produtos}" class="box">Produtos</a></li>
+                <li><a th:href="@{/pedidos}" class="box">Pedidos</a></li>
+                <li><a th:href="@{/orcamentos}" class="box">Orçamentos</a></li>
+                                <li><a th:href="@{/configuracoes}" class="box">Configurações</a></li>
+                
+                <li>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" class="box">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+        <div class="conteudo">
+            <div class="conteudo-meio">
+                <div th:if="${error}" class="alert alert-danger">
+                    <p th:text="${error}"></p>
+                </div>
+                <h1>Cadastro de Matéria-Prima</h1>
+                <form th:action="@{/salvarMP}" th:object="${materiaPrima}" method="post" class="form">
+                    <div class="actions">
+                        <button type="submit" class="box btn-confirm">Adicionar</button>
+                        <a th:href="@{/estoque}" class="box">Voltar</a>
+                        <a th:href="@{/estoque}" class="box">Ver Estoque</a>
+                    </div>
+                    <input type="hidden" th:field="*{id}" />
+                    <input type="text" id="nome" th:field="*{nome}" class="box" placeholder="Nome" required list="materiasPrimas-list">
+                    <datalist id="materiasPrimas-list">
+                        <option th:each="mp : ${materiasPrimas}" th:value="${mp.nome}"></option>
+                    </datalist>
+
+                    <select id="unidade" th:field="*{unidade}" class="box" required>
+                        <option value="">Selecione a Unidade</option>
+                        <option value="un">un</option>
+                        <option value="kg">Kg</option>
+                        <option value="g">g</option>
+                        <option value="ml">ml</option>
+                        <option value="L">L</option>
+                    </select>
+
+                    <input type="number" id="quantidade" th:field="*{quantidade}" step="any" class="box" placeholder="Quantidade" required>
+
+                    <input type="number" id="valor" th:field="*{valor}" step="0.01" class="box" placeholder="Valor" required>
+                    <input type="number" id="quantidadeMinima" th:field="*{quantidadeMinima}" step="any" class="box" placeholder="Quantidade Mínima para Alerta" min="0" required>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="/home.js"></script>
+</body>
+
+</html>

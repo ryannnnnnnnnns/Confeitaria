@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Vendas</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body class="body-geral">
+    <div class="cont-principal">
+        <div class="menu-lateral" id="menuLateral">
+            <button class="toggle-menu" id="toggleMenu">☰</button>
+            <ul>
+                <li><a th:href="@{/home}" class="box">Início</a></li>
+                <li><a th:href="@{/estoque}" class="box">Estoque</a></li>
+                <li><a th:href="@{/producao}" class="box">Produção</a></li>
+                <li><a th:href="@{/vendas}" class="box">Vendas</a></li>
+                <li><a th:href="@{/produtos}" class="box">Produtos</a></li>
+                <li><a th:href="@{/pedidos}" class="box">Pedidos</a></li>
+                <li><a th:href="@{/orcamentos}" class="box">Orçamentos</a></li>
+                                <li><a th:href="@{/configuracoes}" class="box">Configurações</a></li>
+                
+                <li>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" class="box">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+        <div class="conteudo">
+            <div class="conteudo-meio">
+                <h1>Vendas</h1>
+
+                <div class="actions" style="margin-bottom: 20px; display: flex; gap: 10px;">
+                    <a th:href="@{/venda/nova}" class="box btn-confirm">Nova Venda</a>
+                    <a th:href="@{/home}" class="box">Voltar</a>
+                </div>
+
+                <form th:action="@{/relatorio/vendas}" method="get" class="form-inline" style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+                    <label for="dataInicio">De:</label>
+                    <input type="date" id="dataInicio" name="dataInicio" th:value="${dataInicio}" class="box" style="width: auto;">
+                    
+                    <label for="dataFim">Até:</label>
+                    <input type="date" id="dataFim" name="dataFim" th:value="${dataFim}" class="box" style="width: auto;">
+                    
+                    <button type="submit" class="box btn-confirm">Filtrar</button>
+                    <a th:href="@{/relatorio/vendas}" class="box">Limpar</a>
+                </form>
+
+                <div th:if="${#lists.isEmpty(vendas)}" style="text-align: center; margin-top: 20px;">
+                    Nenhuma venda encontrada para o período.
+                </div>
+
+                <table th:unless="${#lists.isEmpty(vendas)}">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Produto</th>
+                            <th>Quantidade</th>
+                            <th>Valor da Venda</th>
+                            <th>Forma de Pagamento</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="venda : ${vendas}">
+                            <td th:text="${#temporals.format(venda.dataVenda, 'dd/MM/yyyy')}"></td>
+                            <td>
+                                <span th:each="item, iterStat : ${venda.itens}" th:text="${item.producao.produto.nome} + (${!iterStat.last} ? ', ' : '')"></span>
+                            </td>
+                            <td th:text="${venda.quantidade}"></td>
+                            <td th:text="|R$ ${#numbers.formatDecimal(venda.valorVenda, 1, 2, 'COMMA')}|"></td>
+                            <td th:text="${venda.formaPagamento}"></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="2" style="text-align: right;">Total:</th>
+                            <th th:text="${totalQuantidade}"></th>
+                            <th th:text="|R$ ${#numbers.formatDecimal(totalValor, 1, 2, 'COMMA')}|"></th>
+                            <th colspan="2"></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="/home.js"></script>
+    <script>
+        const modal = document.getElementById('delete-modal');
+        const closeButton = document.querySelector('.close-button');
+        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+        const deleteForms = document.querySelectorAll('.delete-form');
+        let formToSubmit = null;
+
+        deleteForms.forEach(form => {
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                formToSubmit = form;
+                modal.style.display = 'block';
+            });
+        });
+
+        closeButton.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+
+        cancelDeleteBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+
+        confirmDeleteBtn.addEventListener('click', function() {
+            if (formToSubmit) {
+                formToSubmit.submit();
+            }
+        });
+
+        window.addEventListener('click', function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

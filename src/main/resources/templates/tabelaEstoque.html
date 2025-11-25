@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estoque</title>
+
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .low-stock,
+        .low-stock td {
+            background-color: #ffcccc !important;
+        }
+    </style>
+</head>
+
+<body class="body-geral">
+    <div class="cont-principal">
+        <div class="menu-lateral" id="menuLateral">
+            <button class="toggle-menu" id="toggleMenu">☰</button>
+
+            <ul>
+                <li><a th:href="@{/home}" class="box">Início</a></li>
+                <li><a th:href="@{/estoque}" class="box">Estoque</a></li>
+                <li><a th:href="@{/producao}" class="box">Produção</a></li>
+                <li><a th:href="@{/vendas}" class="box">Vendas</a></li>
+                <li><a th:href="@{/produtos}" class="box">Produtos</a></li>
+                <li><a th:href="@{/pedidos}" class="box">Pedidos</a></li>
+                <li><a th:href="@{/orcamentos}" class="box">Orçamentos</a></li>
+                <li><a th:href="@{/configuracoes}" class="box">Configurações</a></li>
+                
+                <li>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" class="box">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+        <div class="conteudo">
+            <div class="conteudo-meio">
+                <div class="opt-estoque links">
+                    <a th:href="@{/entradaMP}" class="box">Adicionar entrada</a>
+                    <a th:href="@{/formularioMP}" class="box">Cadastrar nova MP</a>
+                    <a th:href="@{/home}" class="box">Voltar</a>
+                </div> <br>
+                <div>
+                    <form th:action="@{/estoque}" method="get" class="form-filtro">
+                        <input type="text" name="nome" placeholder="Nome" class="box" th:value="${param.nome}">
+                        <button type="submit" class="box">Filtrar</button>
+                    </form>
+
+                    <table border="1">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Unidade</th>
+                                <th id="quantidadeHeader" style="cursor: pointer;">Quantidade</th>
+                                <th id="valorHeader" style="cursor: pointer;">Valor Total</th>
+                                <th hidden>Valor por unidade</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="materiaPrimaDTO : ${materiasPrimas}"
+                                th:class="${materiaPrimaDTO.lowStock} ? 'low-stock' : ''">
+                                <td th:text="${materiaPrimaDTO.materiaPrima.nome}"></td>
+                                <td th:switch="${materiaPrimaDTO.materiaPrima.unidade}">
+                                    <span th:case="'g'"
+                                        th:text="${materiaPrimaDTO.materiaPrima.quantidade >= 1000 ? 'kg' : 'g'}"></span>
+                                    <span th:case="'ml'"
+                                        th:text="${materiaPrimaDTO.materiaPrima.quantidade >= 1000 ? 'l' : 'ml'}"></span>
+                                    <span th:case="*" th:text="${materiaPrimaDTO.materiaPrima.unidade}"></span>
+                                </td>
+                                <td th:switch="${materiaPrimaDTO.materiaPrima.unidade}">
+                                    <span th:case="'g'"
+                                        th:text="${materiaPrimaDTO.materiaPrima.quantidade >= 1000 ? #numbers.formatDecimal(materiaPrimaDTO.materiaPrima.quantidade / 1000, 1, 2, 'COMMA') : #numbers.formatInteger(materiaPrimaDTO.materiaPrima.quantidade, 1)}"></span>
+                                    <span th:case="'ml'"
+                                        th:text="${materiaPrimaDTO.materiaPrima.quantidade >= 1000 ? #numbers.formatDecimal(materiaPrimaDTO.materiaPrima.quantidade / 1000, 1, 2, 'COMMA') : #numbers.formatInteger(materiaPrimaDTO.materiaPrima.quantidade, 1)}"></span>
+                                    <span th:case="*" th:text="${#numbers.formatInteger(materiaPrimaDTO.materiaPrima.quantidade, 1)}"></span>
+                                </td>
+                                <td th:text="'R$ ' + ${#numbers.formatDecimal(materiaPrimaDTO.valorTotal, 1, 2, 'COMMA')}">
+                                </td>
+                                <td hidden
+                                    th:text="'R$ ' + ${#numbers.formatDecimal(materiaPrimaDTO.materiaPrima.valor, 1, 3)}">
+                                </td>
+                                <td>
+                                    <a th:href="@{/editarMP/{id}(id=${materiaPrimaDTO.materiaPrima.id})}"
+                                        class="box">Editar</a>
+                                    <form th:action="@{/excluirMP/{id}(id=${materiaPrimaDTO.materiaPrima.id})}"
+                                        method="post" style="display:inline;"
+                                        th:id="'delete-form-' + ${materiaPrimaDTO.materiaPrima.id}">
+                                        <button type="button" class="box btn-danger"
+                                            th:onclick="'confirmDelete(\''
+                                            + ${materiaPrimaDTO.materiaPrima.id} + '\')'">Excluir</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/home.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        document.addEventListener('DOMContentLoaded', function () {
+            showAlert('error', /*[[${error}]]*/ null);
+            showAlert('success', /*[[${success}]]*/ null);
+        });
+
+        function confirmDelete(materiaPrimaId) {
+            Swal.fire({
+                title: 'Tem certeza?',
+                text: "Você não poderá reverter isso!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74c3c', 
+                cancelButtonColor: '#6c757d',   
+                confirmButtonText: 'Sim, exclua!',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('delete-form-' + materiaPrimaId).submit();
+                }
+            });
+        }
+        /*]]>*/
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const table = document.querySelector('table');
+            const tbody = table.querySelector('tbody');
+            const headers = {
+                quantidade: { element: document.getElementById('quantidadeHeader'), index: 2, asc: true },
+                valor: { element: document.getElementById('valorHeader'), index: 3, asc: true }
+            };
+
+            const getCellValue = (row, index) => {
+                const cell = row.children[index];
+                if (!cell) return '';
+                const value = cell.innerText || cell.textContent;
+                if (index === 2 || index === 3) {
+                    return parseFloat(value.replace('R$', '').trim().replace(/\./g, '').replace(',', '.'));
+                }
+                return value;
+            };
+
+            const sortTable = (columnKey) => {
+                const column = headers[columnKey];
+                if (!column.element) return;
+
+                const sortMultiplier = column.asc ? 1 : -1;
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+
+                rows.sort((rowA, rowB) => {
+                    const valA = getCellValue(rowA, column.index);
+                    const valB = getCellValue(rowB, column.index);
+
+                    if (!isNaN(valA) && !isNaN(valB)) {
+                        return (valA - valB) * sortMultiplier;
+                    }
+                    return valA.toString().localeCompare(valB.toString()) * sortMultiplier;
+                });
+
+                rows.forEach(row => tbody.appendChild(row));
+
+                column.asc = !column.asc;
+
+                for (const key in headers) {
+                    if (key !== columnKey) {
+                        headers[key].asc = true;
+                    }
+                    if (headers[key].element) {
+                        headers[key].element.innerHTML = headers[key].element.innerHTML.replace(/ (↑|↓)$/, '');
+                    }
+                }
+
+                column.element.innerHTML += column.asc ? ' ↓' : ' ↑';
+            };
+
+            if (headers.quantidade.element) {
+                headers.quantidade.element.addEventListener('click', () => sortTable('quantidade'));
+            }
+            if (headers.valor.element) {
+                headers.valor.element.addEventListener('click', () => sortTable('valor'));
+            }
+        });
+    </script>
+</body>
+
+</html>

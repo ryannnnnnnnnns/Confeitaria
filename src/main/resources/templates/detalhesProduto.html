@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Produto</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body class="body-geral">
+    <div class="cont-principal">
+        <div class="menu-lateral" id="menuLateral">
+            <button class="toggle-menu" id="toggleMenu">☰</button>
+            
+            <ul>
+                <li><a th:href="@{/home}" class="box">Início</a></li>
+                <li><a th:href="@{/estoque}" class="box">Estoque</a></li>
+                <li><a th:href="@{/producao}" class="box">Produção</a></li>
+                <li><a th:href="@{/vendas}" class="box">Vendas</a></li>
+                <li><a th:href="@{/produtos}" class="box">Produtos</a></li>
+                <li><a th:href="@{/pedidos}" class="box">Pedidos</a></li>
+                <li><a th:href="@{/orcamentos}" class="box">Orçamentos</a></li>
+                                <li><a th:href="@{/configuracoes}" class="box">Configurações</a></li>
+                
+                <li>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" class="box">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+        <div class="conteudo">
+            <div class="conteudo-meio">
+                <h1 th:text="${produto.nome}">Nome do Produto</h1>
+                <div class="actions">
+                    <a href="/produtos" class="box">Voltar</a>
+                    <form th:action="@{/produto/atualizar-preco/{id}(id=${produto.id})}" method="post" style="display: inline;">
+                        <button type="submit" class="box btn-confirm">Atualizar Preço com base na MP</button>
+                    </form>
+                </div>
+                <p th:text="|Preço: R$ ${#numbers.formatDecimal(produto.preco, 1, 2)}|">Preço do produto</p>
+                <div th:if="${produto.rendimento != null && produto.rendimento > 0}">
+                    <p th:text="|Preço por unidade: R$ ${#numbers.formatDecimal(produto.preco / produto.rendimento, 1, 2)}|"></p>
+                </div>
+
+                <h2>Ingredientes</h2>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Ingrediente</th>
+                            <th>Quantidade</th>
+                            <th>Unidade</th>
+                            <th>Custo do Ingrediente</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="ingrediente : ${ingredientesDetalhe}">
+                            <td th:text="${ingrediente.nome}"></td>
+                            <td th:text="${#numbers.formatDecimal(ingrediente.quantidade, 1, 'COMMA', 0, 'POINT')}"></td>
+                            <td th:text="${ingrediente.unidade}"></td>
+                            <td th:text="|R$ ${#numbers.formatDecimal(ingrediente.custoIngrediente, 1, 2, 'COMMA')}|"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="/home.js"></script>
+</body>
+</html>

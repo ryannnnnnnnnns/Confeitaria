@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <title>Novo Orçamento</title>
+    <style>
+        #produto-sugestoes div {
+            padding: 8px 12px;
+            cursor: pointer;
+            background-color: #f9f9f9;
+            border-bottom: 1px solid #ddd;
+        }
+        #produto-sugestoes div:hover {
+            background-color: #f1f1f1;
+        }
+        #produtos-selecionados div {
+            display: flex;
+            justify-content: flex-start; /* Changed from space-between */
+            align-items: center;
+            padding: 8px;
+            background-color: #e9e9e9;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        #produtos-selecionados div > * {
+            margin-right: 10px; /* Add some margin to the elements */
+        }
+        #produtos-selecionados div span:first-child {
+            width: 200px; /* Adjust as needed */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+
+<body class="body-geral">
+    <div class="cont-principal">
+        <div class="menu-lateral" id="menuLateral">
+            <button class="toggle-menu" id="toggleMenu">☰</button>
+            
+            <ul>
+                <li><a th:href="@{/home}" class="box">Início</a></li>
+                <li><a th:href="@{/estoque}" class="box">Estoque</a></li>
+                <li><a th:href="@{/producao}" class="box">Produção</a></li>
+                <li><a th:href="@{/vendas}" class="box">Vendas</a></li>
+                <li><a th:href="@{/produtos}" class="box">Produtos</a></li>
+                <li><a th:href="@{/pedidos}" class="box">Pedidos</a></li>
+                <li><a th:href="@{/orcamentos}" class="box">Orçamentos</a></li>
+                <li><a th:href="@{/configuracoes}" class="box">Configurações</a></li>
+                
+                <li>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" class="box">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+        <div class="conteudo">
+            <div class="conteudo-meio">
+                <h1>Novo Orçamento</h1>
+                <form th:action="@{/orcamento/salvar}" th:object="${orcamento}" method="post" class="form">
+                    <input type="hidden" th:field="*{id}" />
+                    <div class="actions">
+                        <button type="submit" class="box btn-confirm">Salvar Orçamento</button>
+                        <a th:href="@{/orcamentos}" class="box">Voltar</a>
+                    </div>
+                    <input type="text" id="cliente" th:field="*{cliente}" class="box" placeholder="Nome do Cliente" required>
+
+                    <div style="position: relative; margin-bottom: 16px;">
+                        <input type="text" id="produto-search" autocomplete="off" class="box" placeholder="Pesquisar Produto...">
+                        <div id="produto-sugestoes"></div>
+                    </div>
+
+                    <h2>Itens do Orçamento</h2>
+                    <div id="produtos-selecionados"></div>
+
+                    <div class="form-group">
+                        <label for="desconto">Desconto (%):</label>
+                        <input type="number" id="desconto" th:field="*{desconto}" step="0.01" value="0" min="0" max="100" class="box">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const produtos = /*[[${produtos}]]*/ [];
+        const orcamento = /*[[${orcamento}]]*/ null;
+        /*]]>*/
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (orcamento && orcamento.itens) {
+                orcamento.itens.forEach(item => {
+                    const produto = produtos.find(p => p.id === item.produtoId);
+                    if (produto) {
+                        addProduto(produto, item.quantidade, item.valorUnitario);
+                    }
+                });
+            }
+        });
+
+        const produtoSearch = document.getElementById('produto-search');
+        const produtoSugestoes = document.getElementById('produto-sugestoes');
+        const produtosSelecionados = document.getElementById('produtos-selecionados');
+        const orcamentoForm = document.querySelector('form');
+
+        let selectedProducts = [];
+        let productIndex = 0;
+
+        produtoSearch.addEventListener('input', () => {
+            const termo = produtoSearch.value;
+            if (termo.length < 2) {
+                produtoSugestoes.innerHTML = '';
+                return;
+            }
+
+            fetch(`/api/produtos/sugestoes?termo=${termo}`)
+                .then(response => response.json())
+                .then(data => {
+                    produtoSugestoes.innerHTML = '';
+                    data.forEach(produto => {
+                        const div = document.createElement('div');
+                        div.textContent = produto.nome;
+                        div.addEventListener('click', () => {
+                            addProduto(produto);
+                            produtoSearch.value = '';
+                            produtoSugestoes.innerHTML = '';
+                        });
+                        produtoSugestoes.appendChild(div);
+                    });
+                });
+        });
+
+        function addProduto(produto, quantidade = 1, valorUnitario = produto.preco) {
+            if (selectedProducts.find(p => p.id === produto.id)) {
+                return; // Produto já selecionado
+            }
+
+            selectedProducts.push(produto);
+
+            const div = document.createElement('div');
+            
+            const span = document.createElement('span');
+            span.textContent = produto.nome;
+
+            const quantidadeInput = document.createElement('input');
+            quantidadeInput.type = 'number';
+            quantidadeInput.name = `itens[${productIndex}].quantidade`;
+            quantidadeInput.value = quantidade;
+            quantidadeInput.min = '1';
+            quantidadeInput.step = 'any';
+            quantidadeInput.required = true;
+            quantidadeInput.className = 'box';
+            quantidadeInput.style.width = '100px';
+            quantidadeInput.style.marginLeft = '10px';
+            quantidadeInput.placeholder = 'Quantidade';
+
+            const valorUnitarioInput = document.createElement('input');
+            valorUnitarioInput.type = 'text';
+            valorUnitarioInput.name = `itens[${productIndex}].valorUnitario`;
+            valorUnitarioInput.value = parseFloat(valorUnitario || 0).toFixed(2);
+            valorUnitarioInput.readOnly = true;
+            valorUnitarioInput.className = 'box';
+            valorUnitarioInput.style.width = '120px';
+            valorUnitarioInput.style.marginLeft = '10px';
+            valorUnitarioInput.placeholder = 'Valor Unitário';
+
+            const produtoIdInput = document.createElement('input');
+            produtoIdInput.type = 'hidden';
+            produtoIdInput.name = `itens[${productIndex}].produtoId`;
+            produtoIdInput.value = produto.id;
+
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className = 'box btn-danger remove-item';
+            removeButton.style.marginLeft = '10px';
+            removeButton.textContent = 'Remover';
+
+            div.appendChild(span);
+            div.appendChild(quantidadeInput);
+            div.appendChild(valorUnitarioInput);
+            div.appendChild(produtoIdInput);
+            div.appendChild(removeButton);
+            
+            produtosSelecionados.appendChild(div);
+            productIndex++;
+
+            div.querySelector('.remove-item').addEventListener('click', () => {
+                div.remove();
+                selectedProducts = selectedProducts.filter(p => p.id !== produto.id);
+            });
+        }
+
+    </script>
+    <script src="/home.js"></script>
+</body>
+
+</html>

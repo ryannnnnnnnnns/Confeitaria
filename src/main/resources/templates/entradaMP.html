@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <title>Entrada de Matéria-Prima</title>
+
+    <style>
+        .sugestao-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            background-color: #f9f9f9;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .sugestao-item:hover {
+            background-color: #f1f1f1;
+        }
+
+        #sugestoes {
+            position: absolute;
+            border: 1px solid #ddd;
+            border-top: none;
+            z-index: 99;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body class="body-geral">
+    <div class="cont-principal">
+        <div class="menu-lateral" id="menuLateral">
+            <button class="toggle-menu" id="toggleMenu">☰</button>
+
+            <ul>
+                <li><a th:href="@{/home}" class="box">Início</a></li>
+                <li><a th:href="@{/estoque}" class="box">Estoque</a></li>
+                <li><a th:href="@{/producao}" class="box">Produção</a></li>
+                <li><a th:href="@{/vendas}" class="box">Vendas</a></li>
+                <li><a th:href="@{/produtos}" class="box">Produtos</a></li>
+                <li><a th:href="@{/pedidos}" class="box">Pedidos</a></li>
+                <li><a th:href="@{/orcamentos}" class="box">Orçamentos</a></li>
+                                <li><a th:href="@{/configuracoes}" class="box">Configurações</a></li>
+                
+                <li>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" class="box">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+        <div class="conteudo">
+            <div class="conteudo-meio">
+                <h1>Entrada de Matéria-Prima</h1>
+
+                <div th:if="${error}" class="error-message">
+                    <p th:text="${error}"></p>
+                </div>
+
+                <div class="actions">
+                    <button type="submit" form="entrada-form" class="box btn-confirm">Adicionar ao Estoque</button>
+                    <a th:href="@{/estoque}" class="box">Voltar</a>
+                    <a th:href="@{/estoque}" class="box">Ver Estoque</a>
+                </div>
+
+                <div style="position: relative; margin-bottom: 16px;">
+                    <input type="text" id="busca" name="busca" autocomplete="off" placeholder="Digite para buscar..."
+                        class="box">
+                    <div id="sugestoes" style="display: none;"></div>
+                </div>
+
+                <form id="entrada-form" th:action="@{/adicionarMP}" th:object="${materiaPrima}" method="post"
+                    class="form">
+                    <input type="text" id="nome" th:field="*{nome}" readonly class="box" placeholder="Nome">
+
+                    <select id="unidade" th:field="*{unidade}" class="box">
+                        <option value="">Unidade</option>
+                        <option value="un">un</option>
+                        <option value="kg">Kg</option>
+                        <option value="g">g</option>
+                        <option value="ml">ml</option>
+                        <option value="L">L</option>
+                    </select>
+
+                    <input type="number" id="quantidade" th:field="*{quantidade}" class="box" placeholder="Quantidade">
+
+                    <input type="number" id="valor" th:field="*{valor}" step="0.01" class="box" placeholder="Valor">
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="/home.js"></script>
+    <script>
+        const buscaInput = document.getElementById('busca');
+        const sugestoesDiv = document.getElementById('sugestoes');
+        const nomeInput = document.getElementById('nome');
+        const unidadeSelect = document.getElementById('unidade');
+
+        buscaInput.addEventListener('input', async () => {
+            const termoBusca = buscaInput.value;
+            sugestoesDiv.innerHTML = '';
+
+            if (termoBusca.length < 1) {
+                sugestoesDiv.style.display = 'none';
+                return;
+            }
+
+            const response = await fetch(`/api/materia-prima/sugestoes?termo=${termoBusca}`);
+            const sugestoes = await response.json();
+
+            sugestoesDiv.style.display = sugestoes.length > 0 ? 'block' : 'none';
+
+            sugestoes.forEach(sugestao => {
+                const div = document.createElement('div');
+                div.textContent = `${sugestao.nome} (${sugestao.unidade}) `;
+                div.classList.add('sugestao-item');
+                div.addEventListener('click', () => {
+                    nomeInput.value = sugestao.nome;
+                    unidadeSelect.value = sugestao.unidade;
+
+                    sugestoesDiv.innerHTML = '';
+                    sugestoesDiv.style.display = 'none';
+                    buscaInput.value = '';
+                });
+                sugestoesDiv.appendChild(div);
+            });
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!buscaInput.contains(event.target) && !sugestoesDiv.contains(event.target)) {
+                sugestoesDiv.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+
+</html>

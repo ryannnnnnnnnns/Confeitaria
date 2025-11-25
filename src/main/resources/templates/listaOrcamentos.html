@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orçamentos</title>
+
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body class="body-geral">
+    <div class="cont-principal">
+        <div class="menu-lateral" id="menuLateral">
+            <button class="toggle-menu" id="toggleMenu">☰</button>
+
+            <ul>
+                <li><a th:href="@{/home}" class="box">Início</a></li>
+                <li><a th:href="@{/estoque}" class="box">Estoque</a></li>
+                <li><a th:href="@{/producao}" class="box">Produção</a></li>
+                <li><a th:href="@{/vendas}" class="box">Vendas</a></li>
+                <li><a th:href="@{/produtos}" class="box">Produtos</a></li>
+                <li><a th:href="@{/pedidos}" class="box">Pedidos</a></li>
+                <li><a th:href="@{/orcamentos}" class="box">Orçamentos</a></li>
+                <li><a th:href="@{/configuracoes}" class="box">Configurações</a></li>
+                
+                <li>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" class="box">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+        <div class="conteudo">
+            <div class="conteudo-meio">
+                <h1>Orçamentos</h1>
+                <div class="actions">
+                    <a th:href="@{/orcamento/novo}" class="box btn-confirm">Novo Orçamento</a>
+                    <a th:href="@{/home}" class="box">Voltar</a>
+                </div>
+                <br>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Data</th>
+                            <th>Valor Total</th>
+                            <th>Desconto</th>
+                            <th>Valor Final</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="orcamento : ${orcamentos}">
+                            <td th:text="${orcamento.cliente}"></td>
+                            <td th:text="${#temporals.format(orcamento.dataOrcamento, 'dd/MM/yyyy')}"></td>
+                            <td th:text="|R$ ${#numbers.formatDecimal(orcamento.valorTotal, 1, 2, 'COMMA')}|"></td>
+                            <td th:text="|${#numbers.formatDecimal(orcamento.desconto, 1, 2, 'COMMA')}%|"></td>
+                            <td th:text="|R$ ${#numbers.formatDecimal(orcamento.valorFinal, 1, 2, 'COMMA')}|"></td>
+                            <td th:text="${orcamento.status}"></td>
+                            <td>
+                                <a th:href="@{/orcamento/editar/{id}(id=${orcamento.id})}" class="box">Editar</a>
+                                <form th:action="@{/orcamento/excluir/{id}(id=${orcamento.id})}" method="post" style="display:inline;" th:id="'delete-form-' + ${orcamento.id}">
+                                    <button type="button" class="box btn-danger" th:onclick="'confirmDelete(\'' + ${orcamento.id} + '\')'">Excluir</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function confirmDelete(orcamentoId) {
+            Swal.fire({
+                title: 'Tem certeza?',
+                text: "Você não poderá reverter isso!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74c3c',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sim, exclua!',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('delete-form-' + orcamentoId).submit();
+                }
+            });
+        }
+    </script>
+    <script src="/home.js"></script>
+</body>
+
+</html>

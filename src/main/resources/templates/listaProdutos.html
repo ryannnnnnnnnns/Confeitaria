@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Produtos</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="body-geral">
+    <div class="cont-principal">
+        <div class="menu-lateral" id="menuLateral">
+            <button class="toggle-menu" id="toggleMenu">☰</button>
+            
+            <ul>
+                <li><a th:href="@{/home}" class="box">Início</a></li>
+                <li><a th:href="@{/estoque}" class="box">Estoque</a></li>
+                <li><a th:href="@{/producao}" class="box">Produção</a></li>
+                <li><a th:href="@{/vendas}" class="box">Vendas</a></li>
+                <li><a th:href="@{/produtos}" class="box">Produtos</a></li>
+                <li><a th:href="@{/pedidos}" class="box">Pedidos</a></li>
+                <li><a th:href="@{/orcamentos}" class="box">Orçamentos</a></li>
+                                <li><a th:href="@{/configuracoes}" class="box">Configurações</a></li>
+                
+                <li>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" class="box">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+        <div class="conteudo">
+            <div class="conteudo-meio">
+                <h1>Lista de Produtos</h1>
+
+                <div class="actions">
+                    <a href="/formulario-produto" class="box">Novo Produto</a>
+                    <a href="/home" class="box">Voltar</a>
+                </div>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="produto : ${produtos}">
+                            <td th:text="${produto.nome}"></td>
+                            <td>
+                                <a th:href="@{/produto/{id}(id=${produto.id})}" class="box">Detalhes</a>
+                                <a th:href="@{/editar-produto/{id}(id=${produto.id})}" class="box">Editar</a>
+                                <form th:action="@{/excluir-produto/{id}(id=${produto.id})}" method="post" style="display:inline;" th:id="'delete-form-' + ${produto.id}">
+                                    <button type="button" class="box btn-danger" th:onclick="'confirmDelete(\'' + ${produto.id} + '\')'">Excluir</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="/home.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        document.addEventListener('DOMContentLoaded', function() {
+            showAlert('error', /*[[${error}]]*/ null);
+            showAlert('success', /*[[${success}]]*/ null);
+        });
+
+        function confirmDelete(produtoId) {
+            Swal.fire({
+                title: 'Tem certeza?',
+                text: "A exclusão de um produto é permanente e removerá todas as produções e vendas associadas a ele.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74c3c', // Cor de erro para exclusão
+                cancelButtonColor: '#6c757d',   // Cinza neutro
+                confirmButtonText: 'Sim, exclua!',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('delete-form-' + produtoId).submit();
+                }
+            });
+        }
+        /*]]>*/
+    </script>
+</body>
+</html>

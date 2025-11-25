@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="login-body body-geral">
+    <div class="cont-login">
+
+        <img src="/images/logo.jpg" alt="Logo da Confeitaria" class="img-login">
+
+
+
+        <form class="form" th:action="@{/login}" method="post">
+            <label for="username"></label>
+            <input class="box" type="text" id="username" name="username" placeholder="Usuário" required>
+            <label for="password"></label>
+            <input class="box" type="password" id="password" name="password" placeholder="Senha" required>
+            <button class="box" type="submit">Entrar</button>
+        </form>
+
+        <div class="links">
+            <a th:href="@{/cadastroUsuario}" class="box">Primeiro acesso!</a>
+            <a th:href="@{/esqueci-senha}" class="box">Esqueci minha senha</a>
+        </div>
+    </div>
+    <script src="/home.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+    window.onload = function() {
+        const loginError = /*[[${param.error}]]*/ null;
+        const success = /*[[${success}]]*/ null;
+
+        if (loginError) {
+            if (loginError === 'disabled') {
+                showAlert('error', 'Usuário desabilitado. Aguarde a aprovação do administrador.');
+            } else {
+                showAlert('error', 'Usuário ou senha inválidos.');
+            }
+        }
+
+        if (success) {
+            showAlert('success', success);
+        }
+    };
+        /*]]>*/
+    </script>
+</body>
+
+</html>

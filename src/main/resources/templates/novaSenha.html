@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova Senha</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="body-geral">
+    <div class="cont-principal">
+        
+        <div class="conteudo">
+            <div class="cont-login">
+                <h1>Crie uma Nova Senha</h1>
+                <form id="novaSenhaForm" class="form" th:action="@{/salvar-nova-senha}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <input type="hidden" name="login" th:value="${login}" />
+                    
+                    <input type="password" id="novaSenha" name="novaSenha" class="box" placeholder="Nova Senha" required>
+                    <input type="password" id="confirmarNovaSenha" name="confirmarNovaSenha" class="box" placeholder="Confirmar Nova Senha" required>
+
+                    <button type="submit" class="box btn-confirm">Salvar</button>
+                    <a th:href="@{/login}" class="box btn-secondary">Voltar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="/home.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        document.addEventListener('DOMContentLoaded', function() {
+            // Server-side error handling
+            showAlert('error', /*[[${error}]]*/ null);
+
+            // Client-side validation
+            const form = document.getElementById('novaSenhaForm');
+            form.addEventListener('submit', function(event) {
+                const novaSenha = document.getElementById('novaSenha').value;
+                const confirmarNovaSenha = document.getElementById('confirmarNovaSenha').value;
+
+                if (novaSenha !== confirmarNovaSenha) {
+                    event.preventDefault(); // Stop form submission
+                    showAlert('error', 'As senhas não coincidem. Por favor, tente novamente.');
+                }
+            });
+        });
+        /*]]>*/
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <title>Lista de Pedidos</title>
+</head>
+
+<body class="body-geral">
+    <div class="cont-principal">
+        <div class="menu-lateral" id="menuLateral">
+            <button class="toggle-menu" id="toggleMenu">☰</button>
+            <ul>
+                <li><a th:href="@{/home}" class="box">Início</a></li>
+                <li><a th:href="@{/estoque}" class="box">Estoque</a></li>
+                <li><a th:href="@{/producao}" class="box">Produção</a></li>
+                <li><a th:href="@{/vendas}" class="box">Vendas</a></li>
+                <li><a th:href="@{/produtos}" class="box">Produtos</a></li>
+                <li><a th:href="@{/pedidos}" class="box">Pedidos</a></li>
+                <li><a th:href="@{/orcamentos}" class="box">Orçamentos</a></li>
+                                <li><a th:href="@{/configuracoes}" class="box">Configurações</a></li>
+                
+                <li>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" class="box">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+        <div class="conteudo">
+            <div class="conteudo-meio">
+                <h1>Lista de Pedidos</h1>
+                <div class="actions">
+                    <a th:href="@{/pedido/novo}" class="box btn-confirm">Novo Pedido</a>
+                </div>
+
+                <form th:action="@{/pedidos}" method="get" class="form-filter" style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px;">
+                    <input type="text" name="cliente" placeholder="Filtrar por cliente..." class="box" th:value="${param.cliente}">
+                    <select name="status" class="box" th:value="${param.status}">
+                        <option value="">Todos os Status</option>
+                        <option value="Pendente">Pendente</option>
+                        <option value="Em produção">Em produção</option>
+                        <option value="Pronto para entrega">Pronto para entrega</option>
+                        <option value="Entregue">Entregue</option>
+                    </select>
+                    <input type="date" name="data" class="box" th:value="${param.data}">
+                    <button type="submit" class="box">Filtrar</button>
+                </form>
+
+                <div th:if="${success}" class="alert alert-success">
+                    <p th:text="${success}"></p>
+                </div>
+                <div th:if="${error}" class="alert alert-danger">
+                    <p th:text="${error}"></p>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Data de Entrega</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="pedido : ${pedidos}">
+                            <td th:text="${pedido.cliente}"></td>
+                            <td th:text="${#temporals.format(pedido.dataEntrega, 'dd/MM/yyyy')}"></td>
+                            <td th:text="${pedido.status}"></td>
+                            <td>
+                                <a th:href="@{/pedido/{id}(id=${pedido.id})}" class="box">Detalhes</a>
+                                <form th:action="@{/pedido/excluir/{id}(id=${pedido.id})}" method="post" style="display:inline;">
+                                    <button type="submit" class="box btn-danger">Excluir</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="/home.js"></script>
+</body>
+
+</html>

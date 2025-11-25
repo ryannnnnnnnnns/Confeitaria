@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova Venda</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body class="body-geral">
+    <div class="cont-principal">
+        <div class="menu-lateral" id="menuLateral">
+            <button class="toggle-menu" id="toggleMenu">☰</button>
+            
+            <ul>
+                <li><a th:href="@{/home}" class="box">Início</a></li>
+                <li><a th:href="@{/estoque}" class="box">Estoque</a></li>
+                <li><a th:href="@{/producao}" class="box">Produção</a></li>
+                <li><a th:href="@{/vendas}" class="box">Vendas</a></li>
+                <li><a th:href="@{/produtos}" class="box">Produtos</a></li>
+                <li><a th:href="@{/pedidos}" class="box">Pedidos</a></li>
+                <li><a th:href="@{/orcamentos}" class="box">Orçamentos</a></li>
+                <li><a th:href="@{/configuracoes}" class="box">Configurações</a></li>
+                
+                <li>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" class="box">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+        <div class="conteudo">
+            <h1>Nova Venda</h1>
+            <form th:action="@{/venda/nova}" method="post" class="form">
+                <div class="actions">
+                    <button type="submit" class="box btn-confirm">Salvar Venda</button>
+                    <a th:href="@{/vendas}" class="box">Cancelar</a>
+                </div>
+                <input type="hidden" name="dataVenda" th:value="${data}" />
+                <div class="form-group">
+                    <label for="producaoId">Produto:</label>
+                    <select id="producaoId" name="producaoId" required class="box">
+                        <option value="">Selecione um produto</option>
+                        <option th:each="p : ${producoes}"
+                                th:value="${p.producaoId}"
+                                th:attr="data-preco=${p.preco}, data-max=${p.quantidadeDisponivel}"
+                                th:text="${p.nomeProduto + ' (Produzido em: ' + #temporals.format(p.dataProducao, 'dd/MM/yy') + ' | Disponível: ' + p.quantidadeDisponivel + ')'}"></option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="quantidade">Quantidade:</label>
+                    <input type="number" id="quantidade" name="quantidade" min="1" value="1" step="any" required class="box">
+                </div>
+                <div class="form-group">
+                    <label for="valorVenda">Valor de Venda (Sugestão: R$ <span id="preco-sugerido">0.00</span>):</label>
+                    <input type="number" id="valorVenda" name="valorVenda" step="0.01" required class="box">
+                </div>
+                <div class="form-group">
+                    <label for="formaPagamento">Forma de Pagamento:</label>
+                    <select id="formaPagamento" name="formaPagamento" required class="box">
+                        <option value="dinheiro">Dinheiro</option>
+                        <option value="pix">Pix</option>
+                        <option value="cartao">Cartão</option>
+                        <option value="prazo">A Prazo</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" id="doado" name="doado">
+                    <label for="doado">Doado</label>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="/home.js"></script>
+    <script>
+        const producaoSelect = document.getElementById('producaoId');
+        const quantidadeInput = document.getElementById('quantidade');
+        const valorVendaInput = document.getElementById('valorVenda');
+        const precoSugeridoSpan = document.getElementById('preco-sugerido');
+
+        function atualizarPrecos() {
+            const selectedOption = producaoSelect.options[producaoSelect.selectedIndex];
+            const precoUnitario = parseFloat(selectedOption.getAttribute('data-preco') || 0);
+            const quantidade = parseInt(quantidadeInput.value || 0);
+            const maxDisponivel = parseInt(selectedOption.getAttribute('data-max') || 0);
+
+            quantidadeInput.max = maxDisponivel;
+
+            if (quantidade > maxDisponivel) {
+                quantidadeInput.value = maxDisponivel;
+            }
+
+            const precoTotal = precoUnitario * quantidade;
+
+            precoSugeridoSpan.textContent = precoTotal.toFixed(2);
+            if (precoTotal > 0) {
+                valorVendaInput.value = precoTotal.toFixed(2);
+            } else {
+                valorVendaInput.value = '';
+            }
+        }
+
+        producaoSelect.addEventListener('change', atualizarPrecos);
+        quantidadeInput.addEventListener('input', atualizarPrecos);
+
+        atualizarPrecos();
+    </script>
+</body>
+</html>

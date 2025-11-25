@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produção Diária</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="body-geral">
+    <div class="cont-principal">
+        <div class="menu-lateral" id="menuLateral">
+            <button class="toggle-menu" id="toggleMenu">☰</button>
+            
+            <ul>
+                <li><a th:href="@{/home}" class="box">Início</a></li>
+                <li><a th:href="@{/estoque}" class="box">Estoque</a></li>
+                <li><a th:href="@{/producao/diaria}" class="box">Produção</a></li>
+                <li><a th:href="@{/vendas}" class="box">Vendas</a></li>
+                <li><a th:href="@{/produtos}" class="box">Produtos</a></li>
+                <li><a th:href="@{/pedidos}" class="box">Pedidos</a></li>
+                <li><a th:href="@{/orcamentos}" class="box">Orçamentos</a></li>
+                                <li><a th:href="@{/configuracoes}" class="box">Configurações</a></li>
+                
+                <li>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" class="box">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+        <div class="conteudo">
+            <div class="conteudo-meio">
+                <h1>Produção do Dia: <span th:text="${#temporals.format(data, 'dd/MM/yyyy')}"></span></h1>
+
+                <form th:action="@{/producao/diaria}" method="get" class="form-diaria">
+                    <label for="data">Selecionar outra data:</label>
+                    <input type="date" id="data" name="data" th:value="${data}" onchange="this.form.submit()">
+                </form>
+
+                <div class="actions links">
+                    <a th:href="@{/home}" class="box">Voltar para Home</a>
+                    <a th:href="@{/producao/registrar(data=${data})}" class="box">Adicionar Nova Produção</a>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Quantidade</th>
+                            <th>Data de Produção</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="producao : ${producoes}">
+                            <td th:text="${producao.produto.nome}"></td>
+                            <td th:text="${producao.quantidade}"></td>
+                            <td th:text="${#temporals.format(producao.dataProducao, 'dd/MM/yyyy')}"></td>
+                            <td>
+                                <form th:action="@{/producao/diaria/aumentar/{id}(id=${producao.id})}" method="post">
+                                    <button type="submit" class="box">+</button>
+                                </form>
+                                <form th:action="@{/producao/diaria/diminuir/{id}(id=${producao.id})}" method="post">
+                                    <button type="submit" class="box">-</button>
+                                </form>
+                                <form th:action="@{/producao/diaria/remover/{id}(id=${producao.id})}" method="post">
+                                    <button type="submit" class="box">Remover</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="/home.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle the list of errors
+            const errosDeEstoqueAumento = /*[[${errosDeEstoqueAumento}]]*/ null;
+            if (errosDeEstoqueAumento && errosDeEstoqueAumento.length > 0) {
+                const mensagemHtml = '<strong>Não foi possível aumentar a produção:</strong><br><ul style="margin: 0; padding-left: 20px; text-align: left;">' + 
+                                     errosDeEstoqueAumento.map(erro => `<li>${erro}</li>`).join('') + 
+                                     '</ul>';
+                showAlert('error', mensagemHtml, true);
+            }
+
+            // Handle regular success messages
+            showAlert('success', /*[[${success}]]*/ null);
+        });
+        /*]]>*/
+    </script>
+</body>
+</html>
