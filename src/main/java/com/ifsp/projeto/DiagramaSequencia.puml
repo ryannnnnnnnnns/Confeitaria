@@ -1,0 +1,33 @@
+@startuml
+title Diagrama de Sequência: Processo de Venda (Visão Geral)
+
+actor Usuario
+participant "SistemController" as Controller
+participant "VendaService" as VendaService
+participant "ProducaoService" as ProducaoService
+
+Usuario -> Controller : POST /venda/nova (dados da venda)
+activate Controller
+
+Controller -> VendaService : salvarVenda(vendaRequest)
+activate VendaService
+
+VendaService -> ProducaoService : validarEstoque(producaoId, quantidade)
+activate ProducaoService
+ProducaoService --> VendaService : ok
+deactivate ProducaoService
+
+VendaService -> ProducaoService : diminuirEstoque(producaoId, quantidade)
+activate ProducaoService
+ProducaoService --> VendaService : ok
+deactivate ProducaoService
+
+VendaService -> VendaService : salvar registro da venda no BD
+
+VendaService --> Controller : sucesso
+deactivate VendaService
+
+Controller --> Usuario : Redireciona para /vendas com mensagem de sucesso
+deactivate Controller
+
+@enduml

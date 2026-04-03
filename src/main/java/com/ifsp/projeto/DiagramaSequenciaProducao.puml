@@ -1,0 +1,49 @@
+@startuml
+title Diagrama de Sequência: Registrar Produção (Visão Geral)
+
+actor Usuario
+participant "SistemController" as Controller
+participant "ProducaoService" as ProducaoService
+participant "ProdutoRepository" as ProdutoRepository
+participant "MateriaPrimaRepository" as MateriaPrimaRepository
+participant "ProducaoRepository" as ProducaoRepository
+
+Usuario -> Controller : POST /producao/diaria (producaoRequest)
+activate Controller
+
+Controller -> ProducaoService : validarEstoque(producaoRequest.getProdutos())
+activate ProducaoService
+ProducaoService -> ProdutoRepository : buscar produtos com ingredientes
+ProducaoService -> MateriaPrimaRepository : verificar estoque disponível
+ProducaoService --> Controller : lista de erros (vazia se ok)
+deactivate ProducaoService
+
+alt Se houver erros de estoque
+    Controller --> Usuario : Redireciona para /producao/registrar com erro
+else Estoque validado com sucesso
+    Controller -> ProducaoService : registrarProducao(produtos, dataProducao)
+    activate ProducaoService
+
+    loop Para cada produto na requisição
+        ProducaoService -> ProdutoRepository : buscar produto com ingredientes
+
+        ProducaoService -> ProducaoService : atualizarEstoque(produto, quantidade)
+        activate ProducaoService
+        loop Para cada ingrediente
+            ProducaoService -> MateriaPrimaRepository : diminuir quantidade em estoque
+            MateriaPrimaRepository -> MateriaPrimaRepository : save()
+        end
+        deactivate ProducaoService
+
+        ProducaoService -> ProducaoRepository : salvar nova Producao
+    end
+
+    ProducaoService --> Controller : sucesso
+    deactivate ProducaoService
+
+    Controller --> Usuario : Redireciona para /producao/diaria
+end
+
+deactivate Controller
+
+@enduml

@@ -23,7 +23,20 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/", "/login", "/cadastroUsuario", "/salvarUsuario", "/esqueci-senha", "/redefinir-senha-pergunta", "/verificar-resposta", "/nova-senha", "/salvar-nova-senha", "/*.css", "/*.js", "/images/**").permitAll()
+                        .requestMatchers(
+                                "/", 
+                                "/login", 
+                                "/cadastroUsuario", 
+                                "/salvarUsuario", 
+                                "/esqueci-senha", 
+                                "/redefinir-senha-pergunta", 
+                                "/verificar-resposta", 
+                                "/nova-senha", 
+                                "/salvar-nova-senha", 
+                                "/*.css", 
+                                "/*.js", 
+                                "/images/**"
+                        ).permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .requestMatchers("/formulario-produto", "/novo-produto").authenticated()
                         .anyRequest().authenticated()

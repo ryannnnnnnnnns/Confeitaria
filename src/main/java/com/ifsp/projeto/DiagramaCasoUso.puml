@@ -1,0 +1,36 @@
+@startuml
+title Diagrama de Caso de Uso: Sistema de Confeitaria
+
+left to right direction
+actor "Administrador / Gerente" as Admin
+actor "Funcionário / Vendedor" as Funcionario
+
+rectangle "Sistema de Confeitaria" {
+    usecase "Gerenciar Matéria Prima" as UC_MateriaPrima
+    usecase "Gerenciar Produtos" as UC_Produtos
+    usecase "Registrar Produção" as UC_Producao
+    usecase "Gerenciar Vendas" as UC_Vendas
+    usecase "Gerenciar Pedidos" as UC_Pedidos
+    usecase "Gerenciar Orçamentos" as UC_Orcamentos
+    usecase "Gerenciar Usuários" as UC_Usuarios
+    usecase "Visualizar Relatórios" as UC_Relatorios
+    usecase "Login / Configurações da Conta" as UC_Login
+}
+
+Funcionario --> UC_Login
+Funcionario --> UC_Producao
+Funcionario --> UC_Vendas
+Funcionario --> UC_Pedidos
+Funcionario --> UC_Orcamentos
+
+Admin --> UC_Login
+Admin --> UC_MateriaPrima
+Admin --> UC_Produtos
+Admin --> UC_Producao
+Admin --> UC_Vendas
+Admin --> UC_Pedidos
+Admin --> UC_Orcamentos
+Admin --> UC_Usuarios
+Admin --> UC_Relatorios
+
+@enduml

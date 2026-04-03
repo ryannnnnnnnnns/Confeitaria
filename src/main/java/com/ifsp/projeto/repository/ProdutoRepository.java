@@ -11,6 +11,9 @@ import org.springframework.data.repository.query.Param;
 
 public interface ProdutoRepository extends JpaRepository<Produto, Long> {
 
+    @Query("SELECT p FROM Produto p LEFT JOIN FETCH p.ingredientes i LEFT JOIN FETCH i.materiaPrima")
+    List<Produto> findAllWithIngredientes();
+
     @Query("SELECT p FROM Produto p LEFT JOIN FETCH p.ingredientes i LEFT JOIN FETCH i.materiaPrima WHERE p.id = :id")
     Optional<Produto> findByIdWithIngredientes(@Param("id") Long id);
 

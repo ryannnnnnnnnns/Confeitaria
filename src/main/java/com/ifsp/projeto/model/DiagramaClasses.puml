@@ -1,0 +1,107 @@
+@startuml
+
+class Venda {
+  - id: Long
+  - valorVenda: double
+  - quantidade: int
+  - formaPagamento: String
+  - doado: boolean
+  - dataVenda: LocalDate
+}
+
+class Pedido {
+  - id: Long
+  - cliente: String
+  - dataEntrega: LocalDate
+  - status: String
+}
+
+class Produto {
+  - id: Long
+  - nome: String
+  - preco: double
+  - tipo: String
+  - rendimento: Integer
+}
+
+class Usuario {
+  - id: Long
+  - nome: String
+  - fone: String
+  - login: String
+  - senha: String
+  - perguntaSecreta: String
+  - respostaSecreta: String
+  - role: String
+  - enabled: boolean
+}
+
+class Producao {
+  - id: Long
+  - quantidade: int
+  - dataProducao: LocalDate
+  - massa: String
+  - recheio: String
+}
+
+class ItemVenda {
+  - id: Long
+  - quantidade: int
+  - valorUnitario: double
+  - valorTotal: double
+}
+
+class Orcamento {
+  - id: Long
+  - cliente: String
+  - dataOrcamento: LocalDate
+  - valorTotal: double
+  - desconto: double
+  - valorFinal: double
+  - status: String
+}
+
+class ItemPedido {
+  - id: Long
+  - quantidade: int
+  - massa: String
+  - recheio: String
+  - detalhes: String
+}
+
+class Ingrediente {
+  - id: Long
+  - quantidade: Double
+}
+
+class MateriaPrima {
+  - id: Long
+  - nome: String
+  - unidade: String
+  - quantidade: Double
+  - valor: Double
+  - quantidadeMinima: Double
+}
+
+class ItemOrcamento {
+  - id: Long
+  - quantidade: double
+  - valorUnitario: double
+  - valorTotal: double
+}
+
+Venda "1" *-- "0..*" ItemVenda : itens >
+ItemVenda "*" -- "1" Producao : producao >
+
+Pedido "1" *-- "0..*" ItemPedido : itens >
+ItemPedido "*" -- "1" Produto : produto >
+
+Orcamento "1" *-- "0..*" ItemOrcamento : itens >
+ItemOrcamento "*" -- "1" Produto : produto >
+
+Produto "1" *-- "0..*" Ingrediente : ingredientes >
+Produto "1" *-- "0..*" Producao : producoes >
+
+Ingrediente "*" -- "1" MateriaPrima : materiaPrima >
+
+@enduml
