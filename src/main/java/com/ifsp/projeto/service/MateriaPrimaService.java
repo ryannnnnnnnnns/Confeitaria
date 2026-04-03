@@ -30,24 +30,29 @@ public class MateriaPrimaService {
 
     /**
      * Busca todas as matérias-primas cadastradas.
+     *
      * @return Uma lista de todas as matérias-primas.
      */
     public List<MateriaPrima> findAll() {
+
         return materiaPrimaRepository.findAll();
     }
 
     /**
      * Busca uma matéria-prima pelo seu ID.
+     *
      * @param id O ID da matéria-prima.
      * @return Um {@link Optional} contendo a matéria-prima, ou vazio se não encontrada.
      */
     public Optional<MateriaPrima> findById(Long id) {
+
         return materiaPrimaRepository.findById(id);
     }
 
     /**
      * Salva uma nova matéria-prima ou atualiza os dados de uma existente (exceto quantidade).
      * Converte unidades (kg->g, L->ml) e calcula o valor unitário inicial. Impede o cadastro de duplicatas (mesmo nome e unidade).
+     *
      * @param materiaPrima A entidade {@link MateriaPrima} a ser salva.
      * @return A matéria-prima salva.
      * @throws IllegalStateException Se já existir uma matéria-prima com o mesmo nome e unidade.
@@ -84,6 +89,7 @@ public class MateriaPrimaService {
 
     /**
      * Exclui uma matéria-prima do estoque. A exclusão só é permitida se a matéria-prima não estiver sendo utilizada como ingrediente em nenhum produto.
+     *
      * @param id O ID da matéria-prima a ser excluída.
      * @throws IllegalStateException Se a matéria-prima estiver em uso e não puder ser excluída.
      */
@@ -97,6 +103,7 @@ public class MateriaPrimaService {
 
     /**
      * Adiciona uma nova quantidade de uma matéria-prima já existente ao estoque e recalcula o valor unitário com base no custo médio ponderado.
+     *
      * @param materiaPrima Uma entidade {@link MateriaPrima} contendo os dados da entrada (nome, unidade, quantidade e valor da compra).
      * @return A matéria-prima atualizada com a nova quantidade e o novo valor unitário.
      * @throws IllegalArgumentException Se a matéria-prima não estiver previamente cadastrada.
@@ -114,9 +121,7 @@ public class MateriaPrimaService {
             }
         }
 
-        MateriaPrima materiaPrimaExistente = materiaPrimaRepository
-                .findByNomeAndUnidade(materiaPrima.getNome(), materiaPrima.getUnidade())
-                .orElseThrow(() -> new IllegalArgumentException("Matéria-prima não cadastrada. Cadastre-a primeiro."));
+        MateriaPrima materiaPrimaExistente = materiaPrimaRepository.findByNomeAndUnidade(materiaPrima.getNome(), materiaPrima.getUnidade()).orElseThrow(() -> new IllegalArgumentException("Matéria-prima não cadastrada. Cadastre-a primeiro."));
 
         double quantidadeAdicionada = materiaPrima.getQuantidade();
         double valorAdicionado = materiaPrima.getValor() != null ? materiaPrima.getValor() : 0;
@@ -141,35 +146,31 @@ public class MateriaPrimaService {
 
     /**
      * Encontra todas as matérias-primas que estão com estoque baixo, comparando a quantidade atual com a quantidade mínima definida.
+     *
      * @return Uma lista de matérias-primas com estoque baixo.
      */
     public List<MateriaPrima> findLowStock() {
-        return materiaPrimaRepository.findAll().stream()
-                .filter(MateriaPrima::isLowStock)
-                .collect(Collectors.toList());
+        return materiaPrimaRepository.findAll().stream().filter(MateriaPrima::isLowStock).collect(Collectors.toList());
     }
 
     /**
      * Busca todas as matérias-primas aplicando filtros e ordenação, e indica se o estoque está baixo.
-     * @param nome Filtro opcional para o nome da matéria-prima.
+     *
+     * @param nome    Filtro opcional para o nome da matéria-prima.
      * @param unidade Filtro opcional para a unidade de medida.
-     * @param sort Campo opcional para ordenação ('quantidade' ou 'valor').
-     * @param order Ordem opcional ('asc' ou 'desc').
+     * @param sort    Campo opcional para ordenação ('quantidade' ou 'valor').
+     * @param order   Ordem opcional ('asc' ou 'desc').
      * @return Lista de {@link MateriaPrimaComAlertaDTO} com os dados e o alerta de estoque.
      */
     public List<MateriaPrimaComAlertaDTO> findAllWithAlert(String nome, String unidade, String sort, String order) {
         List<MateriaPrima> materiasPrimas = materiaPrimaRepository.findAll();
 
         if (nome != null && !nome.isEmpty()) {
-            materiasPrimas = materiasPrimas.stream()
-                .filter(mp -> mp.getNome().toLowerCase().contains(nome.toLowerCase()))
-                .collect(Collectors.toList());
+            materiasPrimas = materiasPrimas.stream().filter(mp -> mp.getNome().toLowerCase().contains(nome.toLowerCase())).collect(Collectors.toList());
         }
 
         if (unidade != null && !unidade.isEmpty()) {
-            materiasPrimas = materiasPrimas.stream()
-                .filter(mp -> mp.getUnidade().equals(unidade))
-                .collect(Collectors.toList());
+            materiasPrimas = materiasPrimas.stream().filter(mp -> mp.getUnidade().equals(unidade)).collect(Collectors.toList());
         }
 
         if (sort != null && !sort.isEmpty()) {
@@ -188,8 +189,6 @@ public class MateriaPrimaService {
             }
         }
 
-        return materiasPrimas.stream()
-                .map(mp -> new MateriaPrimaComAlertaDTO(mp, mp.isLowStock()))
-                .collect(Collectors.toList());
+        return materiasPrimas.stream().map(mp -> new MateriaPrimaComAlertaDTO(mp, mp.isLowStock())).collect(Collectors.toList());
     }
 }

@@ -27,6 +27,8 @@ public class Ingrediente {
 
     private Double quantidade;
 
+   
+
     // Getters and Setters
     public Long getId() {
         return id;

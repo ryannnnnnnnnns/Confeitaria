@@ -8,7 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Serviço para gerenciar a lógica de negócio relacionada a produtos.
@@ -70,14 +72,20 @@ public class ProdutoService {
 
         List<Ingrediente> receita = new ArrayList<>();
         if (ingredientesIds != null && !ingredientesIds.isEmpty() && quantidades != null && ingredientesIds.size() == quantidades.size()) {
+            
+            // OTIMIZAÇÃO: Busca todas as matérias-primas de uma vez, evitando N+1 consultas
+            List<MateriaPrima> materiasPrimas = materiaPrimaRepository.findAllById(ingredientesIds);
+            Map<Long, MateriaPrima> mpMap = materiasPrimas.stream().collect(Collectors.toMap(MateriaPrima::getId, mp -> mp));
+
             for (int i = 0; i < ingredientesIds.size(); i++) {
                 Long ingredienteId = ingredientesIds.get(i);
                 Double quantidade = quantidades.get(i);
-                Optional<MateriaPrima> mpOpt = materiaPrimaRepository.findById(ingredienteId);
-                if (mpOpt.isPresent()) {
+                
+                MateriaPrima mp = mpMap.get(ingredienteId);
+                if (mp != null) {
                     Ingrediente ingrediente = new Ingrediente();
                     ingrediente.setProduto(produto);
-                    ingrediente.setMateriaPrima(mpOpt.get());
+                    ingrediente.setMateriaPrima(mp);
                     ingrediente.setQuantidade(quantidade);
                     receita.add(ingrediente);
                 }
@@ -101,20 +109,28 @@ public class ProdutoService {
      */
     @Transactional
     public int recalcularPrecos() {
-        List<Produto> produtos = produtoRepository.findAll();
+        // OTIMIZAÇÃO: Busca todos os produtos com seus ingredientes de uma só vez usando JOIN FETCH
+        List<Produto> produtos = produtoRepository.findAllWithIngredientes();
         int produtosAtualizados = 0;
-        for (Produto produto : produtos) {
-            Produto produtoComIngredientes = produtoRepository.findByIdWithIngredientes(produto.getId()).orElse(produto);
+        
+        List<Produto> produtosParaAtualizar = new ArrayList<>();
 
-            double custoTotal = calcularCustoTotal(produtoComIngredientes.getIngredientes());
+        for (Produto produto : produtos) {
+            double custoTotal = calcularCustoTotal(produto.getIngredientes());
             double precoFinal = custoTotal * markup;
 
             if (produto.getPreco() == 0.0 || Math.abs(produto.getPreco() - precoFinal) > 0.01) {
                 produto.setPreco(precoFinal);
-                produtoRepository.save(produto);
+                produtosParaAtualizar.add(produto);
                 produtosAtualizados++;
             }
         }
+        
+        // Salva todos os produtos que sofreram alteração de uma vez (em batch se configurado)
+        if (!produtosParaAtualizar.isEmpty()) {
+            produtoRepository.saveAll(produtosParaAtualizar);
+        }
+        
         return produtosAtualizados;
     }
 
@@ -149,10 +165,12 @@ public class ProdutoService {
 
     private double calcularCustoTotal(List<Ingrediente> ingredientes) {
         double custoTotal = 0.0;
-        for (Ingrediente ingrediente : ingredientes) {
-            if (ingrediente.getMateriaPrima() != null && ingrediente.getQuantidade() != null) {
-                double valorUnitario = ingrediente.getMateriaPrima().getValor();
-                custoTotal += ingrediente.getQuantidade() * valorUnitario;
+        if (ingredientes != null) {
+            for (Ingrediente ingrediente : ingredientes) {
+                if (ingrediente.getMateriaPrima() != null && ingrediente.getQuantidade() != null) {
+                    double valorUnitario = ingrediente.getMateriaPrima().getValor();
+                    custoTotal += ingrediente.getQuantidade() * valorUnitario;
+                }
             }
         }
         return custoTotal;
